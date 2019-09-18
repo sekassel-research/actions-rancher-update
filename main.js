@@ -5,7 +5,7 @@ process.on('unhandledRejection', handleError);
 main().catch(handleError);
 
 const sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000));
-const waitForState = (waitFor, rancherApi, id) => {
+const waitForState = async (waitFor, rancherApi, id) => {
   let retry = 60;
   let state = '';
   while (state !== waitFor && retry > 0) {
@@ -61,12 +61,12 @@ async function main() {
   };
   await rancherApi.post(`/service/${id}?action=upgrade`, { body });
   console.log('Waiting for upgrade ...');
-  waitForState('upgraded', rancherApi, id);
+  await waitForState('upgraded', rancherApi, id);
 
   // Finish upgrade
   await rancherApi.post(`/service/${id}?action=finishupgrade`);
   console.log('Waiting for service starting ...');
-  waitForState('active')
+  await waitForState('active')
 
   console.log('Service is running, upgrade successful');
   core.setOutput('result', success);
