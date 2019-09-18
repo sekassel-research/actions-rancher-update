@@ -1,4 +1,7 @@
 name: Rancher Update Service
+branding:
+  color: blue
+  icon: arrow-up-circle
 description: An action for updating a service in the rancher 1.6.x environment
 inputs:
   rancher_url:
