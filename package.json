@@ -1,0 +1,8 @@
+{
+    "license": "MIT",
+    "dependencies": {
+        "@actions/core": "1.0.0",
+        "request": "^2.88.0",
+        "request-promise-native": "^1.0.7"
+    }
+}

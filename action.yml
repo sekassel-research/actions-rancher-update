@@ -1,0 +1,30 @@
+name: Rancher Update Service
+description: An action for updating a service in the rancher 1.6.x environment
+inputs:
+  rancher_url:
+    description: Rancher instance url
+    required: true
+  rancher_access:
+    description: Rancher access rancher
+    required: true
+  rancher_key:
+    description: Rancher api key
+    required: true
+  project_id:
+    description: Id of the used rancher project
+    required: true
+  stack_name:
+    description: Name of the stack which is associated with the service
+    required: true
+  service_name:
+    description: Name of the service which should be updated
+    required: true
+  docker_image:
+    description: Name of the docker image which is used for updating
+    required: true
+  output:
+    result:
+      description: Boolean which indicates if the action was successful or not
+  runs:
+    using: node12
+    main: main.js
