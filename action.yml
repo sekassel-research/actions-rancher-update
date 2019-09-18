@@ -25,9 +25,9 @@ inputs:
   docker_image:
     description: Name of the docker image which is used for updating
     required: true
-  output:
-    result:
-      description: Boolean which indicates if the action was successful or not
-  runs:
-    using: node12
-    main: main.js
+output:
+  result:
+    description: Boolean which indicates if the action was successful or not
+runs:
+  using: node12
+  main: main.js
