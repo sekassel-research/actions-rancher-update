@@ -39,7 +39,7 @@ async function main() {
 
   let success = false;
   // Check the stack
-  const stack = await rancherApi.get(`/stacks?=${STACK_NAME}`);
+  const stack = await rancherApi.get(`/stacks?name=${STACK_NAME}`);
   if (!stack || !stack.data[0]) {
     throw new Error('Could not find stack name. Check the stack_name input. Deploy failed!');
   }
