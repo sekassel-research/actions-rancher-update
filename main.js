@@ -9,7 +9,7 @@ const waitForState = async (waitFor, rancherApi, id) => {
   let retry = 120;
   let state = '';
   while (state !== waitFor && retry > 0) {
-    state = await rancherApi.get(`/services/${id}`);
+    state = (await rancherApi.get(`/services/${id}`)).state;
     retry--;
     await sleep(1);
   }
@@ -66,7 +66,7 @@ async function main() {
   // Finish upgrade
   await rancherApi.post(`/service/${id}?action=finishupgrade`);
   console.log('Waiting for service starting ...');
-  await waitForState('active')
+  await waitForState('active', rancherApi, id);
 
   console.log('Service is running, upgrade successful');
   core.setOutput('result', success);
