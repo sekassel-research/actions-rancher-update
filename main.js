@@ -46,7 +46,7 @@ async function main() {
   const stackId = stack.data[0].id;
 
   // Check the service
-  const service = await rancherApi.get(`/service?name=${SERVICE_NAME}&stackId=${stackId}`);
+  const service = await rancherApi.get(`/services?name=${SERVICE_NAME}&stackId=${stackId}`);
   if (!service || !service.data[0]) {
     throw new Error('Could not find service name. Check the service_name input. Deploy failed!');
   }
