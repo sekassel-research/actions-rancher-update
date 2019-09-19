@@ -6,7 +6,7 @@ main().catch(handleError);
 
 const sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000));
 const waitForState = async (waitFor, rancherApi, id) => {
-  let retry = 60;
+  let retry = 120;
   let state = '';
   while (state !== waitFor && retry > 0) {
     state = await rancherApi.get(`/services/${id}`);
