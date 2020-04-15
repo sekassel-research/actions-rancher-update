@@ -28,6 +28,7 @@ inputs:
 output:
   result:
     description: Boolean which indicates if the action was successful or not
+
 runs:
   using: node12
   main: main.js
