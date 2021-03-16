@@ -14,7 +14,7 @@ async function main() {
   const dockerImage = core.getInput('docker_image', {required: true});
 
   await axios.patch(
-    `${rancherUrl}/k8s/clusters/${clusterId}/api/apps/v1/namespaces/${namespace}/deployments/${deployment}`,
+    `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/deployments/${deployment}`,
     [
       {
         op: 'replace',
@@ -31,7 +31,7 @@ async function main() {
   );
 
   await axios.post(
-    `${rancherUrl}/v3/project/${clusterId}:${projectId}/workloads/deployment:${namespace}:${deployment}?action=redeploy`,
+    `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/deployment:${namespace}:${deployment}?action=redeploy`,
     {},
     {
       headers: {
