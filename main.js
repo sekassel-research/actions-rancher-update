@@ -1,5 +1,5 @@
-import core from '@actions/core';
-import axios from 'axios';
+const core = require('@actions/core');
+const axios = require('axios');
 
 process.on('unhandledRejection', handleError);
 main().catch(handleError);
