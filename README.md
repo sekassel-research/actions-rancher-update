@@ -16,7 +16,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: sekassel-research/actions-rancher-update@2.0.0
+    - uses: sekassel-research/actions-rancher-update@2.0.1
       with:
         rancher_url: https://rancher.test.de
         rancher_token: ${{ secrets.RANCHER_TOKEN }}
