@@ -12,13 +12,14 @@ async function main() {
   const namespace = core.getInput('namespace', {required: true});
   const deployment = core.getInput('deployment', {required: true});
   const dockerImage = core.getInput('docker_image', {required: true});
+  const containerId = core.getInput('container_id', {required: false}) || 0;
 
   await axios.patch(
     `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/deployments/${deployment}`,
     [
       {
         op: 'replace',
-        path: '/spec/template/spec/containers/0/image',
+        path: `/spec/template/spec/containers/${containerId}/image`,
         value: dockerImage,
       },
     ],
