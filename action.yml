@@ -25,6 +25,12 @@ inputs:
   docker_image:
     description: Name of the docker image which is used for updating
     required: true
+  retry_count:
+    description: Maximum number of retries waiting for upgrade
+    required: true
+  retry_delay:
+    description: Timeout before retry waiting for upgrade
+    required: true
 output:
   result:
     description: Boolean which indicates if the action was successful or not
