@@ -25,6 +25,7 @@ jobs:
         namespace: ${{ secrets.NAMESPACE }}
         deployment: ${{ secrets.DEPLOYMENT }}
         docker_image: sekassel-research/test-image:latest
+        container_id: 0 # optional, defaults to 0
 ```
 
 # Backwards compatibility
