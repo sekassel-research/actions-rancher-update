@@ -5,13 +5,12 @@ process.on('unhandledRejection', handleError);
 main().catch(handleError);
 
 const sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000));
-const waitForState = async (waitFor, rancherApi, id, retry_count, retry_delay) => {
-  let retry = retry_count;
+const waitForState = async (waitFor, rancherApi, id, retryCount, retryDelay) => {
   let state = '';
-  while (state !== waitFor && retry > 0) {
+  while (state !== waitFor && retryCount > 0) {
     state = (await rancherApi.get(`/services/${id}`)).state;
-    retry--;
-    await sleep(retry_delay);
+    retryCount--;
+    await sleep(retryDelay);
   }
 
   if (retry === 0) {
