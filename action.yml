@@ -27,10 +27,12 @@ inputs:
     required: true
   retry_count:
     description: Maximum number of retries waiting for upgrade
-    required: true
+    required: false
+    default: 10
   retry_delay:
     description: Timeout before retry waiting for upgrade
-    required: true
+    required: false
+    default: 5
 output:
   result:
     description: Boolean which indicates if the action was successful or not
