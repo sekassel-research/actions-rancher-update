@@ -13,7 +13,7 @@ const waitForState = async (waitFor, rancherApi, id, retryCount, retryDelay) => 
     await sleep(retryDelay);
   }
 
-  if (retry === 0) {
+  if (retryCount === 0) {
     throw new Error(`Maximum retries exceeded waiting for state ${waitFor}`);
   }
 }
