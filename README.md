@@ -25,8 +25,8 @@ This action helps by updating a service in the rancher 1.6.x environment.
           stack_name: test-stack
           service_name: test-service
           docker_image: sekassel-research/test-image:latest
-          retry_count: 10
-          retry_delay: 5
+          retry_count: 10 # optional
+          retry_delay: 5 # optional
 ```
 
 This will upgrade the service in Rancher and wait 5 seconds before
