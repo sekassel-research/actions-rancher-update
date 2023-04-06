@@ -26,8 +26,8 @@ async function main() {
   const STACK_NAME = core.getInput('stack_name', { required: true });
   const SERVICE_NAME = core.getInput('service_name', { required: true });
   const DOCKER_IMAGE = core.getInput('docker_image', { required: true });
-  const RETRY_COUNT = core.getInput('retry_count', { required: true });
-  const RETRY_DELAY = core.getInput('retry_delay', { required: true });
+  const RETRY_COUNT = +core.getInput('retry_count');
+  const RETRY_DELAY = +core.getInput('retry_delay');
  
   const rancherApi = request.defaults({
     baseUrl: `${RANCHER_URL}/v2-beta/projects/${PROJECT_ID}`,
