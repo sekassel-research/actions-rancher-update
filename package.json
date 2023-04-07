@@ -1,7 +1,15 @@
 {
   "license": "MIT",
+  "scripts": {
+    "build": "esbuild main.ts --bundle --minify --platform=node --target=node16 --outfile=main.js"
+  },
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/http-client": "^2.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.15",
+    "typescript": "^5.0.3",
+    "@types/node": "^16.11.7"
   }
 }
