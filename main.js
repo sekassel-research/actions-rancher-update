@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const axios = require('axios');
+const {HttpClient} = require('@actions/http-client');
 
 process.on('unhandledRejection', handleError);
 main().catch(handleError);
@@ -14,7 +14,13 @@ async function main() {
   const dockerImage = core.getInput('docker_image', {required: true});
   const containerId = core.getInput('container_id', {required: false}) || 0;
 
-  await axios.patch(
+  const http = new HttpClient('actions-rancher-update', undefined, {
+    headers: {
+      Authorization: `Bearer ${rancherToken}`,
+    },
+  });
+
+  await http.patchJson(
     `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/deployments/${deployment}`,
     [
       {
@@ -24,22 +30,13 @@ async function main() {
       },
     ],
     {
-      headers: {
-        'Content-Type': 'application/json-patch+json',
-        'Authorization': 'Bearer ' + rancherToken,
-      },
+      'Content-Type': 'application/json-patch+json',
     },
   );
 
-  await axios.post(
+  await http.postJson(
     `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/deployment:${namespace}:${deployment}?action=redeploy`,
     {},
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + rancherToken,
-      },
-    },
   );
 }
 
