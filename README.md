@@ -16,7 +16,7 @@ This action helps by updating a service in the rancher 1.6.x environment.
     release:
       runs-on: ubuntu-latest
       steps:
-      - uses: sekassel-research/actions-rancher-update@1.1.3
+      - uses: sekassel-research/actions-rancher-update@v1
         with:
           rancher_url: https://rancher.test.de
           rancher_access: ${{ secrets.RANCHER_ACCESS }}
