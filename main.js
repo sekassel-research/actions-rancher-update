@@ -1,14 +1,14 @@
 const core = require('@actions/core');
-const request = require('request-promise-native');
+const {HttpClient} = require('@actions/http-client');
 
 process.on('unhandledRejection', handleError);
 main().catch(handleError);
 
 const sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000));
-const waitForState = async (waitFor, rancherApi, id, retryCount, retryDelay) => {
+const waitForState = async (waitFor, http, baseUrl, id, retryCount, retryDelay) => {
   let state = '';
   while (state !== waitFor && retryCount > 0) {
-    state = (await rancherApi.get(`/services/${id}`)).state;
+    state = (await http.getJson(`${baseUrl}/services/${id}`)).result.state;
     retryCount--;
     await sleep(retryDelay);
   }
@@ -28,26 +28,24 @@ async function main() {
   const DOCKER_IMAGE = core.getInput('docker_image', { required: true });
   const RETRY_COUNT = +core.getInput('retry_count');
   const RETRY_DELAY = +core.getInput('retry_delay');
- 
-  const rancherApi = request.defaults({
-    baseUrl: `${RANCHER_URL}/v2-beta/projects/${PROJECT_ID}`,
-    auth: {
-      user: RANCHER_ACCESS,
-      pass: RANCHER_KEY
-    },
-    json: true
+
+  const http = new HttpClient('actions-rancher-deploy', undefined, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${RANCHER_ACCESS}:${RANCHER_KEY}`).toString('base64')}`
+    }
   });
+  const baseUrl = `${RANCHER_URL}/v2-beta/projects/${PROJECT_ID}`;
 
   let success = false;
   // Check the stack
-  const stack = await rancherApi.get(`/stacks?name=${STACK_NAME}`);
+  const {result: stack} = await http.getJson(`${baseUrl}/stacks?name=${STACK_NAME}`);
   if (!stack || !stack.data[0]) {
     throw new Error('Could not find stack name. Check the stack_name input. Deploy failed!');
   }
   const stackId = stack.data[0].id;
 
   // Check the service
-  const service = await rancherApi.get(`/services?name=${SERVICE_NAME}&stackId=${stackId}`);
+  const {result: service} = await http.getJson(`${baseUrl}/services?name=${SERVICE_NAME}&stackId=${stackId}`);
   if (!service || !service.data[0]) {
     throw new Error('Could not find service name. Check the service_name input. Deploy failed!');
   }
@@ -55,19 +53,18 @@ async function main() {
   launchConfig.imageUuid = `docker:${DOCKER_IMAGE}`;
 
   // Upgrade
-  const body = {
+  await http.postJson(`${baseUrl}/service/${id}?action=upgrade`, {
     inServiceStrategy: {
       launchConfig
     }
-  };
-  await rancherApi.post(`/service/${id}?action=upgrade`, { body });
+  });
   console.log('Waiting for upgrade ...');
-  await waitForState('upgraded', rancherApi, id, RETRY_COUNT, RETRY_DELAY);
+  await waitForState('upgraded', http, id, RETRY_COUNT, RETRY_DELAY);
 
   // Finish upgrade
-  await rancherApi.post(`/service/${id}?action=finishupgrade`);
+  await http.post(`${baseUrl}/service/${id}?action=finishupgrade`, '');
   console.log('Waiting for service starting ...');
-  await waitForState('active', rancherApi, id, RETRY_COUNT, RETRY_DELAY);
+  await waitForState('active', http, id, RETRY_COUNT, RETRY_DELAY);
 
   console.log('Service is running, upgrade successful');
   core.setOutput('result', success);
