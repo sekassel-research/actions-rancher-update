@@ -18,13 +18,13 @@ jobs:
     steps:
     - uses: sekassel-research/actions-rancher-update@v3.0.0
       with:
-        rancher_url: https://rancher.test.de
-        rancher_token: ${{ secrets.RANCHER_TOKEN }}
-        cluster_id: ${{ secrets.CLUSTER_ID }}
-        project_id: ${{ secrets.PROJECT_ID }}
+        rancher_url: ${{ secrets.RANCHER_URL }} # e.g. https://rancher.test.de
+        rancher_token: ${{ secrets.RANCHER_TOKEN }} # e.g. token-xxxxx:xxxxxxxxxxxxxxx
+        cluster_id: ${{ secrets.CLUSTER_ID }} # e.g. c-xxxxx
+        project_id: ${{ secrets.PROJECT_ID }} # e.g. p-xxxxx
         namespace: ${{ secrets.NAMESPACE }}
         deployment: ${{ secrets.DEPLOYMENT }}
-        docker_image: sekassel-research/test-image:latest
+        docker_image: sekassel-research/example:latest
         container_id: 0 # optional, defaults to 0
 ```
 
