@@ -23,7 +23,9 @@ jobs:
         cluster_id: ${{ secrets.CLUSTER_ID }} # e.g. c-xxxxx
         project_id: ${{ secrets.PROJECT_ID }} # e.g. p-xxxxx
         namespace: ${{ secrets.NAMESPACE }}
-        deployment: ${{ secrets.DEPLOYMENT }}
+        kind: deployment # e.g. deployment (default), statefulset, cronjob
+        workload: ${{ secrets.WORKLOAD }} # e.g. my-service
+        deployment: ${{ secrets.DEPLOYMENT }} # deprecated, use workload instead
         docker_image: sekassel-research/example:latest
         container_id: 0 # optional, defaults to 0
 ```
