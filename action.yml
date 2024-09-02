@@ -19,9 +19,15 @@ inputs:
   namespace:
     description: Rancher/Kubernetes Namespace
     required: true
-  deployment:
-    description: Deployment/Service within the Namespace
+  kind:
+    description: Kind of workload, e.g. deployment (default), cronjob, statefulset, ...
+    required: false
+  workload:
+    description: Workload (Deployment, CronJob, StatefulSet, ...) within the Namespace
     required: true
+  deployment:
+    description: Deployment/Service within the Namespace - deprecated, use workload instead
+    required: false
   docker_image:
     description: Docker image
     required: true
