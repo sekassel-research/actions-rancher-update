@@ -33,7 +33,7 @@ async function main() {
   });
 
   await http.patchJson(
-    `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/${kind}/${workload}`,
+    `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/${kind}s/${workload}`,
     [
       {
         op: 'replace',
