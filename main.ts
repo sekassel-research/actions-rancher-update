@@ -42,7 +42,8 @@ async function main() {
       },
     ],
     {
-      'Content-Type': 'application/json-patch+json',
+      // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
+      'content-type': 'application/json-patch+json',
     },
   );
 
