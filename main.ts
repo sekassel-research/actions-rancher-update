@@ -24,6 +24,7 @@ async function main() {
     console.warn(`The 'deployment' argument is deprecated, please use \`workload: ${workload}\` instead`);
   }
 
+  const apiVersion = getApiVersion(kind);
   const path = getContainerImagePath(kind, containerId);
 
   const http = new HttpClient('actions-rancher-update', undefined, {
@@ -33,7 +34,7 @@ async function main() {
   });
 
   await http.patchJson(
-    `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/${kind}s/${workload}`,
+    `${rancherUrl}/k8s/clusters/${clusterId}/apis/${apiVersion}/namespaces/${namespace}/${kind}s/${workload}`,
     [
       {
         op: 'replace',
@@ -51,6 +52,23 @@ async function main() {
     `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/${kind}:${namespace}:${deployment}?action=redeploy`,
     {},
   );
+}
+
+function getApiVersion(kind: string) {
+  switch (kind) {
+    // https://kubernetes.io/docs/concepts/workloads/controllers/
+    case 'deployment':
+    case 'statefulset':
+    case 'daemonset':
+    case 'replicaset':
+    case 'replicationcontroller':
+      return 'apps/v1';
+    case 'job':
+    case 'cronjob':
+      return 'batch/v1';
+    default:
+      throw new Error(`Unsupported workload kind: ${kind}`);
+  }
 }
 
 function getContainerImagePath(kind: string, containerId: string) {
