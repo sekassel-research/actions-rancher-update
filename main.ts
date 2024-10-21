@@ -48,10 +48,13 @@ async function main() {
     },
   );
 
-  await http.postJson(
-    `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/${kind}:${namespace}:${deployment}?action=redeploy`,
-    {},
-  );
+  // No need to redeploy if the workload is a Job or CronJob
+  if (apiVersion === 'apps/v1') {
+    await http.postJson(
+      `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/${kind}:${namespace}:${deployment}?action=redeploy`,
+      {},
+    );
+  }
 }
 
 function getApiVersion(kind: string) {
