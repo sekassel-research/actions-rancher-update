@@ -1,8 +1,6 @@
 import * as core from '@actions/core';
 import {HttpClient} from '@actions/http-client';
-
-process.on('unhandledRejection', handleError);
-main().catch(handleError);
+import {TypedResponse} from '@actions/http-client/lib/interfaces';
 
 async function main() {
   const rancherUrl = core.getInput('rancher_url', {required: true});
@@ -33,7 +31,8 @@ async function main() {
     },
   });
 
-  await http.patchJson(
+  console.log(`Updating ${kind} ${workload} in namespace ${namespace} with image ${dockerImage}...`);
+  const patchResponse = await http.patchJson(
     `${rancherUrl}/k8s/clusters/${clusterId}/apis/${apiVersion}/namespaces/${namespace}/${kind}s/${workload}`,
     [
       {
@@ -47,13 +46,28 @@ async function main() {
       'content-type': 'application/json-patch+json',
     },
   );
+  if (isOk(patchResponse)) {
+    console.log(`Patched ${kind} ${workload}.`);
+  } else {
+    fail(`Failed to patch ${kind} ${workload}: ${patchResponse.statusCode}`, patchResponse.result);
+    return;
+  }
 
-  // No need to redeploy if the workload is a Job or CronJob
+// No need to redeploy if the workload is a Job or CronJob
   if (apiVersion === 'apps/v1') {
-    await http.postJson(
+    console.log(`Redeploying ${kind} ${workload} in namespace ${namespace}...`);
+    const redeployResponse = await http.postJson(
       `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/${kind}:${namespace}:${deployment}?action=redeploy`,
       {},
     );
+    if (isOk(redeployResponse)) {
+      console.log(`Redeployed ${kind} ${workload}.`);
+    } else {
+      fail(`Failed to redeploy ${kind} ${workload}: ${redeployResponse.statusCode}`, redeployResponse.result);
+      return;
+    }
+  } else {
+    console.log(`Skipping redeploy for ${kind} ${workload}`);
   }
 }
 
@@ -91,7 +105,19 @@ function getContainerImagePath(kind: string, containerId: string) {
   }
 }
 
+function isOk(result: TypedResponse<unknown>) {
+  return result.statusCode >= 200 && result.statusCode < 300;
+}
+
+function fail(message: string, ...args: any[]) {
+  console.error(message, ...args);
+  core.setFailed(message);
+}
+
 function handleError(err: Error) {
-  console.log(err);
+  console.error(err);
   core.setFailed(err.message);
 }
+
+process.on('unhandledRejection', handleError);
+main().catch(handleError);
