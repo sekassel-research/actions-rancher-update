@@ -6,7 +6,6 @@ async function main() {
   const rancherUrl = core.getInput('rancher_url', {required: true});
   const rancherToken = core.getInput('rancher_token', {required: true});
   const clusterId = core.getInput('cluster_id', {required: true});
-  const projectId = core.getInput('project_id', {required: true});
   const namespace = core.getInput('namespace', {required: true});
   const kind = core.getInput('kind', {required: false})?.toLowerCase() || 'deployment';
   let workload = core.getInput('workload', {required: false});
@@ -23,24 +22,35 @@ async function main() {
   }
 
   const apiVersion = getApiVersion(kind);
-  const path = getContainerImagePath(kind, containerId);
-
   const http = new HttpClient('actions-rancher-update', undefined, {
     headers: {
       Authorization: `Bearer ${rancherToken}`,
     },
   });
 
+  const patches = [
+    {
+      op: 'replace',
+      path: getContainerImagePath(kind, containerId),
+      value: dockerImage,
+    },
+  ];
+
+  // Similar to rancher, we ensure the pods are redeployed by adding a timestamp annotation to the spec.
+  const annotationsPath = getAnnotationsPath(kind);
+  if (annotationsPath) {
+    patches.push({
+      op: 'add',
+      // https://stackoverflow.com/questions/55573724/create-a-patch-to-add-a-kubernetes-annotation
+      path: annotationsPath + '/cattle.io~1timestamp',
+      value: new Date().toISOString(),
+    });
+  }
+
   console.log(`Updating ${kind} ${workload} in namespace ${namespace} with image ${dockerImage}...`);
   const patchResponse = await http.patchJson(
     `${rancherUrl}/k8s/clusters/${clusterId}/apis/${apiVersion}/namespaces/${namespace}/${kind}s/${workload}`,
-    [
-      {
-        op: 'replace',
-        path,
-        value: dockerImage,
-      },
-    ],
+    patches,
     {
       // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
       'content-type': 'application/json-patch+json',
@@ -51,23 +61,6 @@ async function main() {
   } else {
     fail(`Failed to patch ${kind} ${workload}: ${patchResponse.statusCode}`, patchResponse.result);
     return;
-  }
-
-// No need to redeploy if the workload is a Job or CronJob
-  if (apiVersion === 'apps/v1') {
-    console.log(`Redeploying ${kind} ${workload} in namespace ${namespace}...`);
-    const redeployResponse = await http.postJson(
-      `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/${kind}:${namespace}:${deployment}?action=redeploy`,
-      {},
-    );
-    if (isOk(redeployResponse)) {
-      console.log(`Redeployed ${kind} ${workload}.`);
-    } else {
-      fail(`Failed to redeploy ${kind} ${workload}: ${redeployResponse.statusCode}`, redeployResponse.result);
-      return;
-    }
-  } else {
-    console.log(`Skipping redeploy for ${kind} ${workload}`);
   }
 }
 
@@ -102,6 +95,17 @@ function getContainerImagePath(kind: string, containerId: string) {
       return `/spec/jobTemplate/spec/template/spec/containers/${containerId}/image`;
     default:
       throw new Error(`Unsupported workload kind: ${kind}`);
+  }
+}
+
+function getAnnotationsPath(kind: string) {
+  switch (kind) {
+    case 'deployment':
+    case 'statefulset':
+    case 'daemonset':
+    case 'replicaset':
+    case 'replicationcontroller':
+      return `/spec/template/metadata/annotations`;
   }
 }
 

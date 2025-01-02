@@ -13,9 +13,6 @@ inputs:
   cluster_id:
     description: Rancher/Kubernetes Cluster ID
     required: true
-  project_id:
-    description: Rancher Project ID
-    required: true
   namespace:
     description: Rancher/Kubernetes Namespace
     required: true

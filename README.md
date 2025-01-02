@@ -21,7 +21,6 @@ jobs:
         rancher_url: ${{ secrets.RANCHER_URL }} # e.g. https://rancher.test.de
         rancher_token: ${{ secrets.RANCHER_TOKEN }} # e.g. token-xxxxx:xxxxxxxxxxxxxxx
         cluster_id: ${{ secrets.CLUSTER_ID }} # e.g. c-xxxxx
-        project_id: ${{ secrets.PROJECT_ID }} # e.g. p-xxxxx
         namespace: ${{ secrets.NAMESPACE }}
         kind: deployment # e.g. deployment (default), statefulset, cronjob
         workload: ${{ secrets.WORKLOAD }} # e.g. my-service
