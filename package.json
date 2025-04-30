@@ -4,14 +4,14 @@
   "scripts": {
     "build": "esbuild main.ts --bundle --minify --platform=node --target=node20 --outfile=main.js"
   },
-  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/http-client": "^2.2.3"
   },
   "devDependencies": {
-    "@types/node": "^20.17.11",
-    "esbuild": "^0.24.2",
-    "typescript": "^5.7.2"
+    "@types/node": "^20.17.32",
+    "esbuild": "^0.25.3",
+    "typescript": "^5.8.3"
   }
 }
