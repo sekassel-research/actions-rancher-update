@@ -19,12 +19,18 @@ inputs:
   kind:
     description: Kind of workload, e.g. deployment (default), cronjob, statefulset, ...
     required: false
+    default: 'deployment'
   workload:
     description: Workload (Deployment, CronJob, StatefulSet, ...) within the Namespace
     required: true
   deployment:
-    description: Deployment/Service within the Namespace - deprecated, use workload instead
+    description: Deployment/Service within the Namespace
+    deprecationMessage: Use workload instead
     required: false
+  container_id:
+    description: Container ID within the workload
+    required: false
+    default: '0'
   docker_image:
     description: Docker image
     required: true
