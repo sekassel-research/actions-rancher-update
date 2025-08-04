@@ -25,7 +25,7 @@ jobs:
         cluster_id: ${{ secrets.CLUSTER_ID }} # e.g. c-xxxxx
         namespace: ${{ secrets.NAMESPACE }}
         # Update one or more workloads. Optionally supports container ID.
-        workloads: |
+        workloads: |- # note "|-": chop trailing newline
           deployment/${{ secrets.DEPLOYMENT }}
           cronjob/${{ secrets.CRONJOB }}
           deployment/${{ secrets.DEPLOYMENT }}/2

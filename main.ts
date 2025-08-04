@@ -13,6 +13,10 @@ async function main() {
 
   const parsedWorkloads: {apiVersion: string; kind: string, name: string, containerPath: string}[] = [];
   for (const line of workloads.split(/[\s,]*/)) {
+    if (!line) {
+      continue; // skip empty items
+    }
+
     // kind/workload[/containerId]
     const [kind, workload, containerId = '0'] = line.split('/');
     if (!kind || !workload) {
