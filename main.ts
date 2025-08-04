@@ -7,7 +7,7 @@ async function main() {
   const rancherToken = core.getInput('rancher_token', {required: true});
   const clusterId = core.getInput('cluster_id', {required: true});
   const namespace = core.getInput('namespace', {required: true});
-  const workloads = core.getInput('workloads', {required: false});
+  const workloads = core.getInput('workloads', {required: true});
   const dockerImage = core.getInput('docker_image', {required: true});
   const redeploy = core.getBooleanInput('redeploy', {required: false});
 
@@ -16,7 +16,7 @@ async function main() {
     // kind/workload[/containerId]
     const [kind, workload, containerId = '0'] = line.split('/');
     if (!kind || !workload) {
-      fail(`Invalid workload format: ${workload}. Expected format: kind/workload[/containerId]`);
+      fail(`Invalid workload format: ${line}. Expected format: kind/workload[/containerId]`);
       return;
     }
     const apiVersion = getApiVersion(kind);
