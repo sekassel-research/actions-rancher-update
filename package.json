@@ -1,6 +1,6 @@
 {
   "license": "MIT",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "scripts": {
     "build": "esbuild main.ts --bundle --minify --platform=node --target=node20 --outfile=main.js"
   },
