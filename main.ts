@@ -56,7 +56,7 @@ async function main() {
 
     console.log(`Updating ${workload.kind} ${workload.name} in namespace ${namespace} with image ${dockerImage}...`);
     const patchResponse = await http.patchJson(
-      `${rancherUrl}/k8s/clusters/${clusterId}/apis/${workload.apiVersion}/namespaces/${namespace}/${workload.kind}s/${workload}`,
+      `${rancherUrl}/k8s/clusters/${clusterId}/apis/${workload.apiVersion}/namespaces/${namespace}/${workload.kind}s/${workload.name}`,
       patches,
       {
         // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
