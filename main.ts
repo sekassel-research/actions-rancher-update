@@ -12,7 +12,7 @@ async function main() {
   const redeploy = core.getBooleanInput('redeploy', {required: false});
 
   const parsedWorkloads: {apiVersion: string; kind: string, name: string, containerPath: string}[] = [];
-  for (const line of workloads.split(/[\s,]*/)) {
+  for (const line of workloads.split(/[\s,]+/)) {
     if (!line) {
       continue; // skip empty items
     }
