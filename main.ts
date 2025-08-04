@@ -7,60 +7,69 @@ async function main() {
   const rancherToken = core.getInput('rancher_token', {required: true});
   const clusterId = core.getInput('cluster_id', {required: true});
   const namespace = core.getInput('namespace', {required: true});
-  const kind = core.getInput('kind', {required: false})?.toLowerCase() || 'deployment';
-  let workload = core.getInput('workload', {required: false});
-  const deployment = core.getInput('deployment', {required: false});
+  const workloads = core.getInput('workloads', {required: false});
   const dockerImage = core.getInput('docker_image', {required: true});
-  const containerId = core.getInput('container_id', {required: false}) || '0';
 
-  if (!workload) {
-    if (!deployment) {
-      throw new Error('Either workload or deployment must be provided');
+  const parsedWorkloads: {apiVersion: string; kind: string, name: string, containerPath: string}[] = [];
+  for (const line of workloads.split(/[\s,]*/)) {
+    // kind/workload[/containerId]
+    const [kind, workload, containerId = '0'] = line.split('/');
+    if (!kind || !workload) {
+      fail(`Invalid workload format: ${workload}. Expected format: kind/workload[/containerId]`);
+      return;
     }
-    workload = deployment;
-    console.warn(`The 'deployment' argument is deprecated, please use \`workload: ${workload}\` instead`);
+    const apiVersion = getApiVersion(kind);
+    const containerPath = getContainerImagePath(kind, containerId);
+    parsedWorkloads.push({apiVersion, kind, name: workload, containerPath});
   }
 
-  const apiVersion = getApiVersion(kind);
   const http = new HttpClient('actions-rancher-update', undefined, {
     headers: {
       Authorization: `Bearer ${rancherToken}`,
     },
   });
 
-  const patches = [
-    {
-      op: 'replace',
-      path: getContainerImagePath(kind, containerId),
-      value: dockerImage,
-    },
-  ];
+  const results = await Promise.allSettled(parsedWorkloads.map(async workload => {
+    const patches = [
+      {
+        op: 'replace',
+        path: workload.containerPath,
+        value: dockerImage,
+      },
+    ];
 
-  // Similar to rancher, we ensure the pods are redeployed by adding a timestamp annotation to the spec.
-  const annotationsPath = getAnnotationsPath(kind);
-  if (annotationsPath) {
-    patches.push({
-      op: 'add',
-      // https://stackoverflow.com/questions/55573724/create-a-patch-to-add-a-kubernetes-annotation
-      path: annotationsPath + '/cattle.io~1timestamp',
-      value: new Date().toISOString(),
-    });
-  }
+    // Similar to rancher, we ensure the pods are redeployed by adding a timestamp annotation to the spec.
+    const annotationsPath = getAnnotationsPath(workload.kind);
+    if (annotationsPath) {
+      patches.push({
+        op: 'add',
+        // https://stackoverflow.com/questions/55573724/create-a-patch-to-add-a-kubernetes-annotation
+        path: annotationsPath + '/cattle.io~1timestamp',
+        value: new Date().toISOString(),
+      });
+    }
 
-  console.log(`Updating ${kind} ${workload} in namespace ${namespace} with image ${dockerImage}...`);
-  const patchResponse = await http.patchJson(
-    `${rancherUrl}/k8s/clusters/${clusterId}/apis/${apiVersion}/namespaces/${namespace}/${kind}s/${workload}`,
-    patches,
-    {
-      // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
-      'content-type': 'application/json-patch+json',
-    },
-  );
-  if (isOk(patchResponse)) {
-    console.log(`Patched ${kind} ${workload}.`);
-  } else {
-    fail(`Failed to patch ${kind} ${workload}: ${patchResponse.statusCode}`, patchResponse.result);
-    return;
+    console.log(`Updating ${workload.kind} ${workload.name} in namespace ${namespace} with image ${dockerImage}...`);
+    const patchResponse = await http.patchJson(
+      `${rancherUrl}/k8s/clusters/${clusterId}/apis/${workload.apiVersion}/namespaces/${namespace}/${workload.kind}s/${workload}`,
+      patches,
+      {
+        // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
+        'content-type': 'application/json-patch+json',
+      },
+    );
+    if (isOk(patchResponse)) {
+      console.log(`Patched ${workload.kind} ${workload.name}.`);
+    } else {
+      throw new Error(`Failed to patch ${workload.kind} ${workload.name}: ${patchResponse.statusCode} ${JSON.stringify(patchResponse.result)}`);
+    }
+  }));
+
+  if (results.some(result => result.status === 'rejected')) {
+    fail(`Some workloads failed to update:\n${results
+      .filter(result => result.status === 'rejected')
+      .map(result => '- ' + result.reason).join('\n')
+    }`);
   }
 }
 
