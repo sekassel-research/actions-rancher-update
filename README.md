@@ -2,7 +2,7 @@
 
 This action helps by updating a service in the Rancher 2 environment with kubernetes.
 It does so by patching the container `image` field of one or more deployments, cronjobs, statefulsets, etc.
-In addition, it sets a timestamp annotation to ensure redeployment.
+In addition, it can set a timestamp annotation to ensure redeployment.
 
 # Examples
 
@@ -30,7 +30,14 @@ jobs:
           cronjob/${{ secrets.CRONJOB }}
           deployment/${{ secrets.DEPLOYMENT }}/2
         docker_image: sekassel-research/example:latest
+        redeploy: false # optional, sets a timestamp annotation to ensure redeployment
 ```
+
+- Use `redeploy` if you want automatic redeployment similar to the Rancher "Redeploy" button.
+  This is useful if you have a fixed tag like `latest` and not if you inject a dynamic version into the workflow.
+  > [!NOTE]
+  > Note that this may fail if the pod does not have an `annotations` field due to limitations of json-patch (empty object is ok).
+  > See https://stackoverflow.com/a/61514294/4138801
 
 # Backwards compatibility
 

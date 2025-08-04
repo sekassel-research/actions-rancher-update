@@ -9,6 +9,7 @@ async function main() {
   const namespace = core.getInput('namespace', {required: true});
   const workloads = core.getInput('workloads', {required: false});
   const dockerImage = core.getInput('docker_image', {required: true});
+  const redeploy = core.getBooleanInput('redeploy', {required: false});
 
   const parsedWorkloads: {apiVersion: string; kind: string, name: string, containerPath: string}[] = [];
   for (const line of workloads.split(/[\s,]*/)) {
@@ -40,7 +41,7 @@ async function main() {
 
     // Similar to rancher, we ensure the pods are redeployed by adding a timestamp annotation to the spec.
     const annotationsPath = getAnnotationsPath(workload.kind);
-    if (annotationsPath) {
+    if (redeploy && annotationsPath) {
       patches.push({
         op: 'add',
         // https://stackoverflow.com/questions/55573724/create-a-patch-to-add-a-kubernetes-annotation

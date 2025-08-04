@@ -25,6 +25,13 @@ inputs:
   docker_image:
     description: Docker image
     required: true
+  redeploy:
+    description: |
+      Whether to redeploy the service after updating the image.
+      If set to `true`, the service will be redeployed by adding a timestamp annotation to the pod.
+      Does not apply to Jobs or CronJobs.
+    required: false
+    default: 'false'
 
 runs:
   using: node20
