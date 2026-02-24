@@ -83,10 +83,20 @@ async function main() {
   }));
 
   if (results.some(result => result.status === 'rejected')) {
-    fail(`Some workloads failed to update:\n${results
-      .filter(result => result.status === 'rejected')
-      .map(result => '- ' + result.reason).join('\n')
-    }`);
+    let message = 'Some workloads failed to update:\n';
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        message += `- ${result.reason}\n`;
+      }
+    }
+    if (results.some(r => r.status === 'rejected' && r.reason.includes('the server rejected our request due to an error in our request'))) {
+      message += '\n'
+        + 'Note: a likely reason is that one or more of your deployments does not have the `spec/template/metadata/annotations` object.\n'
+        + 'This action modifies an annotation to trigger a redeploy.\n'
+        + 'Add any dummy annotation (e.g. `cattle.io/timestamp: 0`) to avoid the error.\n'
+        + 'See https://github.com/kubernetes-sigs/kustomize/issues/1439';
+    }
+    fail(message);
   }
 }
 
