@@ -8,24 +8,36 @@ async function main() {
   const clusterId = core.getInput('cluster_id', {required: true});
   const namespace = core.getInput('namespace', {required: true});
   const workloads = core.getInput('workloads', {required: true});
-  const dockerImage = core.getInput('docker_image', {required: true});
+  const dockerImage = core.getInput('docker_image', {required: false});
   const redeploy = core.getBooleanInput('redeploy', {required: false});
 
-  const parsedWorkloads: {apiVersion: string; kind: string, name: string, containerPath: string}[] = [];
+  const parsedWorkloads: {
+    apiVersion: string;
+    kind: string,
+    name: string,
+    containerPath: string;
+    image?: string;
+  }[] = [];
   for (const line of workloads.split(/[\s,]+/)) {
     if (!line) {
       continue; // skip empty items
     }
 
-    // kind/workload[/containerId]
-    const [kind, workload, containerId = '0'] = line.split('/');
+    // kind/workload[/containerId][:image:tag]
+    const [target, image] = line.split(':', 2);
+    const [kind, workload, containerId = '0'] = target.split('/');
     if (!kind || !workload) {
-      fail(`Invalid workload format: ${line}. Expected format: kind/workload[/containerId]`);
+      fail(`Invalid workload format: ${line}. Expected format: kind/workload[/containerId][:image:tag]`);
       return;
     }
+    if (!dockerImage && !image) {
+      fail(`Invalid workload format: ${line}. Input docker_image is not specified; workload image is required. Expected format: kind/workload[/containerId]:image[:tag]`);
+      return;
+    }
+
     const apiVersion = getApiVersion(kind);
     const containerPath = getContainerImagePath(kind, containerId);
-    parsedWorkloads.push({apiVersion, kind, name: workload, containerPath});
+    parsedWorkloads.push({apiVersion, kind, name: workload, containerPath, image});
   }
 
   const http = new HttpClient('actions-rancher-update', undefined, {
@@ -39,7 +51,7 @@ async function main() {
       {
         op: 'replace',
         path: workload.containerPath,
-        value: dockerImage,
+        value: workload.image || dockerImage,
       },
     ];
 

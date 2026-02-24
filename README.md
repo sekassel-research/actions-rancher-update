@@ -24,12 +24,14 @@ jobs:
         rancher_token: ${{ secrets.RANCHER_TOKEN }} # e.g. token-xxxxx:xxxxxxxxxxxxxxx
         cluster_id: ${{ secrets.CLUSTER_ID }} # e.g. c-xxxxx
         namespace: ${{ secrets.NAMESPACE }}
-        # Update one or more workloads. Optionally supports container ID.
+        # Update one or more workloads. Optionally supports container ID and image:tag.
         workloads: |- # note "|-": chop trailing newline
           deployment/${{ secrets.DEPLOYMENT }}
           cronjob/${{ secrets.CRONJOB }}
           deployment/${{ secrets.DEPLOYMENT }}/2
-        docker_image: sekassel-research/example:latest
+          deployment/${{ secrets.DEPLOYMENT }}:registry.example.com/image:tag
+          deployment/${{ secrets.DEPLOYMENT }}/3:registry.example.com/image:tag
+        docker_image: sekassel-research/example:latest # used as default when the workload config does not override it
         redeploy: false # optional, sets a timestamp annotation to ensure redeployment
 ```
 

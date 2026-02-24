@@ -20,11 +20,13 @@ inputs:
     description: |
       Workloads (Deployment, CronJob, StatefulSet, ...) within the Namespace
       Can be multiple, separated by commas or spaces or newlines.
-      Format: `kind/name` or `kind/name/container` (container defaults to `0`)
+      Format: `kind/name[/container][:image[:tag]]`
+      - container defaults to `0`
+      - image:tag defaults to input `docker_image`
     required: true
   docker_image:
-    description: Docker image
-    required: true
+    description: Docker image. Not required if every workload specifies it.
+    required: false
   redeploy:
     description: |
       Whether to redeploy the service after updating the image.
