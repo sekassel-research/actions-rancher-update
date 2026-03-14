@@ -89,7 +89,7 @@ async function main() {
         message += `- ${result.reason}\n`;
       }
     }
-    if (results.some(r => r.status === 'rejected' && r.reason.includes('the server rejected our request due to an error in our request'))) {
+    if (results.some(r => r.status === 'rejected' && String(r.reason).includes('the server rejected our request due to an error in our request'))) {
       message += '\n'
         + 'Note: a likely reason is that one or more of your deployments does not have the `spec/template/metadata/annotations` object.\n'
         + 'This action modifies an annotation to trigger a redeploy.\n'
