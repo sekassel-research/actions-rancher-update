@@ -1,6 +1,6 @@
 {
   "license": "MIT",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "scripts": {
     "build": "esbuild main.ts --bundle --minify --platform=node --target=node24 --line-limit=120 --outfile=main.js"
   },
