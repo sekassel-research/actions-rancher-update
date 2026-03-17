@@ -18,7 +18,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: sekassel-research/actions-rancher-update@v5.0.0
+    - uses: sekassel-research/actions-rancher-update@v5.1.0
       with:
         rancher_url: ${{ secrets.RANCHER_URL }} # e.g. https://rancher.test.de
         rancher_token: ${{ secrets.RANCHER_TOKEN }} # e.g. token-xxxxx:xxxxxxxxxxxxxxx
@@ -33,6 +33,7 @@ jobs:
           deployment/${{ secrets.DEPLOYMENT }}/3:registry.example.com/image:tag
         docker_image: sekassel-research/example:latest # used as default when the workload config does not override it
         redeploy: false # optional, sets a timestamp annotation to ensure redeployment
+        timeout: 15 # optional, seconds before HTTP requests time out
 ```
 
 - Use `redeploy` if you want automatic redeployment similar to the Rancher "Redeploy" button.
