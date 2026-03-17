@@ -10,6 +10,7 @@ async function main() {
   const workloads = core.getInput('workloads', {required: true});
   const dockerImage = core.getInput('docker_image', {required: false});
   const redeploy = core.getBooleanInput('redeploy', {required: false});
+  const timeout = +core.getInput('timeout', {required: false});
 
   const parsedWorkloads: {
     apiVersion: string;
@@ -47,11 +48,12 @@ async function main() {
   });
 
   const results = await Promise.allSettled(parsedWorkloads.map(async workload => {
+    const image = workload.image || dockerImage;
     const patches = [
       {
         op: 'replace',
         path: workload.containerPath,
-        value: workload.image || dockerImage,
+        value: image,
       },
     ];
 
@@ -66,16 +68,16 @@ async function main() {
       });
     }
 
-    console.log(`Updating ${workload.kind} ${workload.name} in namespace ${namespace} with image ${dockerImage}...`);
-    const patchResponse = await http.patchJson(
-      `${rancherUrl}/k8s/clusters/${clusterId}/apis/${workload.apiVersion}/namespaces/${namespace}/${workload.kind}s/${workload.name}`,
-      patches,
-      {
+    console.log(`Updating ${workload.kind} ${workload.name} in namespace ${namespace} with image ${image}...`);
+    const url = `${rancherUrl}/k8s/clusters/${clusterId}/apis/${workload.apiVersion}/namespaces/${namespace}/${workload.kind}s/${workload.name}`;
+    const patchResponse = await Promise.race([
+      http.patchJson(url, patches, {
         // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
         'content-type': 'application/json-patch+json',
-      },
-    );
-    if (isOk(patchResponse)) {
+      }),
+      ...timeout ? [new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Failed to patch ${workload.kind} ${workload.name}: Timeout: ${timeout}s`)), timeout))] : [],
+    ]);
+    if (patchResponse && isOk(patchResponse)) {
       console.log(`Patched ${workload.kind} ${workload.name}.`);
     } else {
       throw new Error(`Failed to patch ${workload.kind} ${workload.name}: ${patchResponse.statusCode} ${JSON.stringify(patchResponse.result)}`);

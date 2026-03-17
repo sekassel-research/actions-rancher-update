@@ -34,6 +34,10 @@ inputs:
       Does not apply to Jobs or CronJobs.
     required: false
     default: 'false'
+  timeout:
+    description: How many seconds to wait until HTTP requests time out.
+    required: false
+    default: '15'
 
 runs:
   using: node24
