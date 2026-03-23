@@ -75,7 +75,7 @@ async function main() {
         // NB: must be lowercase, otherwise patchJson overrides this with 'application/json'
         'content-type': 'application/json-patch+json',
       }),
-      ...timeout ? [new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Failed to patch ${workload.kind} ${workload.name}: Timeout: ${timeout}s`)), timeout))] : [],
+      ...timeout ? [rejectTimeout(timeout, `Failed to patch ${workload.kind} ${workload.name}`)] : [],
     ]);
     if (patchResponse && isOk(patchResponse)) {
       console.log(`Patched ${workload.kind} ${workload.name}.`);
@@ -149,6 +149,14 @@ function getAnnotationsPath(kind: string) {
 
 function isOk(result: TypedResponse<unknown>) {
   return result.statusCode >= 200 && result.statusCode < 300;
+}
+
+function rejectTimeout(timeout: number, message: string) {
+  return new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${message}: Timeout: ${timeout}s`));
+    }, timeout * 1000);
+  })
 }
 
 function fail(message: string, ...args: any[]) {
