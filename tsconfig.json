@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ES2024",
     "moduleResolution": "node",
     "lib": [
-      "es2022"
+      "ES2024"
     ],
     "forceConsistentCasingInFileNames": true,
     "strict": true,
