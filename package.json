@@ -1,6 +1,8 @@
 {
+  "name": "actions-rancher-update",
+  "homepage": "https://github.com/sekassel-research/actions-rancher-update",
   "license": "MIT",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "scripts": {
     "build": "esbuild main.ts --bundle --minify --platform=node --target=node24 --line-limit=120 --outfile=main.js"
   },
