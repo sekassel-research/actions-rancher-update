@@ -28,12 +28,10 @@ async function main() {
     const [target, image] = line.split(':', 2);
     const [kind, workload, containerId = '0'] = target.split('/');
     if (!kind || !workload) {
-      fail(`Invalid workload format: ${line}. Expected format: kind/workload[/containerId][:image:tag]`);
-      return;
+      throw new Error(`Invalid workload format: ${line}. Expected format: kind/workload[/containerId][:image:tag]`);
     }
     if (!dockerImage && !image) {
-      fail(`Invalid workload format: ${line}. Input docker_image is not specified; workload image is required. Expected format: kind/workload[/containerId]:image[:tag]`);
-      return;
+      throw new Error(`Invalid workload format: ${line}. Input docker_image is not specified; workload image is required. Expected format: kind/workload[/containerId]:image[:tag]`);
     }
 
     const apiVersion = getApiVersion(kind);
@@ -42,10 +40,13 @@ async function main() {
   }
 
   const http = new HttpClient('actions-rancher-update', undefined, {
+    socketTimeout: timeout * 1000,
+    keepAlive: true,
     headers: {
       Authorization: `Bearer ${rancherToken}`,
     },
   });
+  using _httpDispose = {[Symbol.dispose]: () => http.dispose()};
 
   const results = await Promise.allSettled(parsedWorkloads.map(async workload => {
     const image = workload.image || dockerImage;
@@ -98,7 +99,10 @@ async function main() {
         + 'Add any dummy annotation (e.g. `cattle.io/timestamp: 0`) to avoid the error.\n'
         + 'See https://github.com/kubernetes-sigs/kustomize/issues/1439';
     }
-    fail(message);
+    throw new AggregateError(
+      results.filter(r => r.status === 'rejected').map(r => r.reason),
+      message,
+    );
   }
 }
 
@@ -159,15 +163,16 @@ function rejectTimeout(timeout: number, message: string) {
   })
 }
 
-function fail(message: string, ...args: any[]) {
-  console.error(message, ...args);
-  core.setFailed(message);
-}
-
 function handleError(err: Error) {
   console.error(err);
   core.setFailed(err.message);
 }
 
 process.on('unhandledRejection', handleError);
-main().catch(handleError);
+main().then(() => {
+  // Ensure process quits even if there are pending (http request) promises
+  process.exit(0);
+}, err => {
+  handleError(err);
+  process.exit(1);
+});
